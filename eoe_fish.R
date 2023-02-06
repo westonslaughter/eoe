@@ -26,9 +26,23 @@ for(sheet in mainstem_fish_sheets$name) {
 
   this_sheet <- googlesheets4::read_sheet(ss = eoe_snorkels_ss, sheet = sheet) %>%
     mutate(
-      date = lubridate::date(date),
-      time_minutes = as.character(time_minutes)
+      date = lubridate::dmy(date),
+      timeofstart = format(as.POSIXct(timeofstart), format = "%H:%M"),
+      ## datetime = paste(date, timeofstart),
+      time_minutes = as.character(time_minutes),
+      size_cm = as.character(size_cm)
+    ) %>%
+    rename(
+      time_duration = time_minutes,
+      time_start = timeofstart
+    ) %>%
+    select(
+      date,
+      time_start,
+      time_duration,
+      everything()
     )
+
   print(colnames(this_sheet))
 
   if(!exists('eoe_fish_df')){
@@ -46,4 +60,7 @@ for(sheet in mainstem_fish_sheets$name) {
 eoe_fish_data <- eoe_fish_df %>%
   filter(!is.na(date))
 
-googlesheets4::write_sheet(eoe_fish_data, ss = "https://docs.google.com/spreadsheets/d/1S60cJ4mvPsbA50NsWkZbuwwygiREbqiFxlGubKmHp6A/edit#gid=0")
+# upload df to gdrive
+googlesheets4::write_sheet(eoe_fish_data,
+                           ss = "https://docs.google.com/spreadsheets/d/1S60cJ4mvPsbA50NsWkZbuwwygiREbqiFxlGubKmHp6A/edit#gid=0",
+                           sheet = 'eoe_snorkel_data')
